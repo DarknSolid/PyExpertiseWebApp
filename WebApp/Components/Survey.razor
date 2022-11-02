@@ -1,0 +1,70 @@
+﻿@using WebApp.Models;
+
+
+<MudText Typo="Typo.h3" GutterBottom="true">Expertise Self-Assessment</MudText>
+
+<MudCard>
+    <MudCardContent>
+        <div class="d-flex flex-column gap-10">
+
+            @foreach (var library in Libraries)
+            {
+                <div>
+                    <MudText>@library</MudText>
+                    <MudSlider TickMarks="true"
+                           TickMarkLabels="@_labels"
+                           Value="_surveyModel.Answers[library]"
+                           Step="1"
+                           Max="5"
+                           Min="1"
+                           @onchange=@((ChangeEventArgs e) => OnSliderChange(library, e)) />
+                </div>
+            }
+        </div>
+
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmitPressed">Submit</MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public Action<SurveyModel> OnSubmit { get; set; }
+
+    [Parameter, EditorRequired]
+    public IEnumerable<string> Libraries { get; set; }
+
+    private SurveyModel _surveyModel;
+
+    private string[] _labels = new string[] { "1", "2", "3", "4", "5" };
+
+    public Survey()
+    {
+        _surveyModel = new();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Initialize answers with ones
+        foreach (string library in Libraries)
+        {
+            _surveyModel.Answers.Add(library, 1);
+        }
+    }
+
+    private void OnSliderChange(string key, ChangeEventArgs args)
+    {
+        int value = int.Parse((string)args.Value);
+        _surveyModel.Answers[key] = value;
+    }
+
+    private void OnSubmitPressed()
+    {
+        Console.WriteLine();
+    }
+
+
+}

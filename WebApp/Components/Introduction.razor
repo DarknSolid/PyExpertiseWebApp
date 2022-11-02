@@ -1,0 +1,20 @@
+﻿<MudText Typo="Typo.h3" GutterBottom="true">Welcome to the expertise analysis survey</MudText>
+<MudCard>
+    <MudCardContent>
+        <MudText>
+            This short survey will evaluate...
+        </MudText>
+        <MudText>
+            Click 'Next' to start!
+        </MudText>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnNext">Next</MudButton>
+    </MudCardActions>
+</MudCard>
+
+
+@code {
+    [Parameter]
+    public Action OnNext { get; set; }
+}

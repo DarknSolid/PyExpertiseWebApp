@@ -1,0 +1,36 @@
+﻿@using WebApp.Models;
+<MudText Typo="Typo.h3" GutterBottom="true">Enter your GitHub Information</MudText>
+
+<EditForm Model="@InfoModel" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudCardContent>
+        <MudTextField Label="Email"
+                      Class="mt-3" HelperText="The email of your GitHub account"
+                      @bind-Value="InfoModel.Email"
+                      For="@(() => InfoModel.Email)" />
+        <MudTextField Label="GitHub Url"
+                      HelperText="The master branch GitHub url of your python project"
+                      @bind-Value="InfoModel.Url"
+                      For="@(() => InfoModel.Url)" />
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Analyse</MudButton>
+    </MudCardActions>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Action<InfoModel> OnSubmit { get; set; }
+
+    public InfoModel InfoModel { get; set; }
+
+    public UserInfoForm()
+    {
+        InfoModel = new();
+    }
+
+    private void OnValidSubmit()
+    {
+        OnSubmit(InfoModel);
+    }
+}

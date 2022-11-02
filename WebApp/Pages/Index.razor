@@ -1,38 +1,71 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations;
+@using WebApp.Components
 @using WebApp.Models;
 
 <PageTitle>PyExpertise</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Enter your GitHub Information</MudText>
+<MudText>Step = @step</MudText>
 
-<EditForm Model="@infoModel" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-    <MudCardContent>
-        <MudTextField Label="Email"
-                      Class="mt-3" HelperText="The email of your GitHub account"
-                      @bind-Value="infoModel.Email"
-                      For="@(() => infoModel.Email)" />
-        <MudTextField Label="GitHub Url"
-                      HelperText="The master branch GitHub url of your python project"
-                      @bind-Value="infoModel.Url"
-                      For="@(() => infoModel.Url)" />
-    </MudCardContent>
-    <MudCardActions>
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Analyse</MudButton>
-    </MudCardActions>
-</EditForm>
+@if(step == 0)
+{
+    <Introduction OnNext="OnNext"/>
+}
+else if (step == 1)
+{
+    <UserInfoForm OnSubmit="OnUserInfoSubmit"/>
+}
+else if (step == 2)
+{
+    <SurveyAnalysisLoading/>
+}
+else if (step == 3)
+{
+    <Survey Libraries="_libraries" OnSubmit="OnSurveySubmit"/>
+}
+else if (step == 4)
+{
+    <SurveyResult OnSubmit="OnNext" ImportResult="_importResult"/>
+}
+else
+{
+    <MudText Typo="Typo.h3" GutterBottom="true">Thank you for participating!</MudText>
+    <MudText Typo="Typo.body1" GutterBottom="true">You may now close this window</MudText>
+
+}
 
 @code {
-    private InfoModel infoModel;
+    private InfoModel _infoModel;
+    private SurveyModel _surveyModel;
+    private IEnumerable<string> _libraries;
+    private int step;
+    private ImportResult _importResult;
 
     public Index()
     {
-        infoModel = new();
+        step = 2;
+        _libraries = new List<string>() { "test1", "test2", "test3" };
+        _importResult = new();
+        _importResult.Imports = new List<(string, int)>() { ("test1", 4), ("test2", 7), ("test3", 2) };
     }
 
-    private void OnValidSubmit()
+    void OnUserInfoSubmit(InfoModel infoModel)
     {
+        step++;
+        _infoModel = infoModel;
+        StateHasChanged();
+    }
+
+    void OnNext()
+    {
+        step++;
+        StateHasChanged();
+    }
+
+    void OnSurveySubmit(SurveyModel surveyModel)
+    {
+        step++;
+        _surveyModel = surveyModel;
         StateHasChanged();
     }
 }
