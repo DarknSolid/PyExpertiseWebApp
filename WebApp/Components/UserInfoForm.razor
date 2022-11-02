@@ -20,17 +20,21 @@
 
 @code {
     [Parameter]
-    public Action<InfoModel> OnSubmit { get; set; }
+    public Func<InfoModel, Task> OnSubmit { get; set; }
 
     public InfoModel InfoModel { get; set; }
 
     public UserInfoForm()
     {
-        InfoModel = new();
+        InfoModel = new()
+        {
+                Email = "mircea.lungu@gmail.com",
+                Url = "https://github.com/zeeguu/api.git"
+        };
     }
 
-    private void OnValidSubmit()
+    private async Task OnValidSubmit()
     {
-        OnSubmit(InfoModel);
+        await OnSubmit(InfoModel);
     }
 }

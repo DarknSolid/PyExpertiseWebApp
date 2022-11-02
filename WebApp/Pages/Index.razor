@@ -1,11 +1,17 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations;
-@using WebApp.Components
+@using WebApp.Components;
+@using Newtonsoft.Json;
 @using WebApp.Models;
+@inject HttpClient HttpClient
 
 <PageTitle>PyExpertise</PageTitle>
 
 <MudText>Step = @step</MudText>
+@if(errorMessage != null)
+{
+    <MudAlert Severity="Severity.Warning">@errorMessage</MudAlert>
+}
 
 @if(step == 0)
 {
@@ -21,38 +27,54 @@ else if (step == 2)
 }
 else if (step == 3)
 {
-    <Survey Libraries="_libraries" OnSubmit="OnSurveySubmit"/>
+    <Survey Libraries="_importResult.LibrariesToAssess" OnSubmit="OnSurveySubmit"/>
 }
 else if (step == 4)
 {
-    <SurveyResult OnSubmit="OnNext" ImportResult="_importResult"/>
+    <SurveyResult OnSubmit="OnNext" ImportResults="_importResult.Imports"/>
 }
 else
 {
     <MudText Typo="Typo.h3" GutterBottom="true">Thank you for participating!</MudText>
     <MudText Typo="Typo.body1" GutterBottom="true">You may now close this window</MudText>
-
 }
+
+        <MudOverlay Visible="isLoading" DarkBackground="true" Absolute="false">
+            <MudProgressCircular Size="Size.Large" Color="Color.Secondary" Indeterminate="true" />
+        </MudOverlay>
 
 @code {
     private InfoModel _infoModel;
-    private SurveyModel _surveyModel;
-    private IEnumerable<string> _libraries;
-    private int step;
     private ImportResult _importResult;
+    private SurveyModel _surveyModel;
+    private int step;
+    private bool isLoading;
+    private string errorMessage;
 
     public Index()
     {
-        step = 2;
-        _libraries = new List<string>() { "test1", "test2", "test3" };
-        _importResult = new();
-        _importResult.Imports = new List<(string, int)>() { ("test1", 4), ("test2", 7), ("test3", 2) };
+        step = 0;
     }
 
-    void OnUserInfoSubmit(InfoModel infoModel)
+    async Task OnUserInfoSubmit(InfoModel infoModel)
     {
+        errorMessage = null;
         step++;
         _infoModel = infoModel;
+        var url = "/analyse";
+        StateHasChanged();
+        var response = await HttpClient.PostAsJsonAsync(url, infoModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var str = await response.Content.ReadAsStringAsync();
+            _importResult = JsonConvert.DeserializeObject<ImportResult>(str);
+            step++;
+        }
+        else
+        {
+            errorMessage = response.StatusCode + " - something went wrong. Please try again";
+            step = 1;
+        }
         StateHasChanged();
     }
 
@@ -62,10 +84,23 @@ else
         StateHasChanged();
     }
 
-    void OnSurveySubmit(SurveyModel surveyModel)
+    async Task OnSurveySubmit(SurveyModel surveyModel)
     {
-        step++;
+        errorMessage = null;
         _surveyModel = surveyModel;
+        var url = "/self-assess";
+        isLoading = true;
+        StateHasChanged();
+        var response = await HttpClient.PostAsJsonAsync(url, surveyModel);
+        isLoading = false;
+        if (response.IsSuccessStatusCode)
+        {
+            step++;
+        }
+        else
+        {
+            errorMessage = response.StatusCode + " - something went wrong. Please try again";
+        }
         StateHasChanged();
     }
 }

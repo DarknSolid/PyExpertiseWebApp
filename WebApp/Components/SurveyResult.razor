@@ -8,14 +8,14 @@
 
         <div class="d-flex flex-column gap-10">
 
-            <MudTable Items="@ImportResult.Imports" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+            <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
                 <HeaderContent>
                     <MudTh>Library</MudTh>
                     <MudTh>Total Imports</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Library">@context.Item1</MudTd>
-                    <MudTd DataLabel="Total Imports">@context.Item2</MudTd>
+                    <MudTd DataLabel="Library">@context.Library</MudTd>
+                    <MudTd DataLabel="Total Imports">@context.Count</MudTd>
                 </RowTemplate>
             </MudTable>
         </div>
@@ -28,7 +28,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public ImportResult ImportResult { get; set; }
+    public IEnumerable<Import> ImportResults { get; set; }
 
     [Parameter, EditorRequired]
     public Action OnSubmit { get; set; }

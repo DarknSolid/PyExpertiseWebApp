@@ -30,7 +30,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public Action<SurveyModel> OnSubmit { get; set; }
+    public Func<SurveyModel, Task> OnSubmit { get; set; }
 
     [Parameter, EditorRequired]
     public IEnumerable<string> Libraries { get; set; }
@@ -51,7 +51,10 @@
         // Initialize answers with ones
         foreach (string library in Libraries)
         {
-            _surveyModel.Answers.Add(library, 1);
+            if (!_surveyModel.Answers.ContainsKey(library))
+            {
+                _surveyModel.Answers.Add(library, 1);
+            }
         }
     }
 
@@ -61,9 +64,9 @@
         _surveyModel.Answers[key] = value;
     }
 
-    private void OnSubmitPressed()
+    private async Task OnSubmitPressed()
     {
-        Console.WriteLine();
+        await OnSubmit(_surveyModel);
     }
 
 
