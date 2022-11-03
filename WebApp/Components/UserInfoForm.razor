@@ -4,13 +4,16 @@
 <EditForm Model="@InfoModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <MudCard>
+        <MudCardHeader>
+            <MudText>Please provide your email to your GitHub account and the url to one of your python projects on GitHub. The url should be the git clone url.</MudText>
+        </MudCardHeader>
     <MudCardContent>
         <MudTextField Label="Email"
                       Class="mt-3" HelperText="The email of your GitHub account"
                       @bind-Value="InfoModel.Email"
                       For="@(() => InfoModel.Email)" />
         <MudTextField Label="GitHub Clone Url"
-                          HelperText="e.g. https://github.com/pallets/flask.git"
+                          HelperText="Please enter a valid url to one of your largest python projects. e.g. https://github.com/pallets/flask.git"
                       
                       @bind-Value="InfoModel.Url"
                       For="@(() => InfoModel.Url)" />
