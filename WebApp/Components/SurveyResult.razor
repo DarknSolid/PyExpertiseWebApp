@@ -8,14 +8,14 @@
 
         <div class="d-flex flex-column gap-10">
 
-            <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+            <MudTable Items="@_importResults" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
                 <HeaderContent>
                     <MudTh>Library</MudTh>
                     <MudTh>Total Imports</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Library">@context.Library</MudTd>
-                    <MudTd DataLabel="Total Imports">@context.Count</MudTd>
+                    <MudTd>@context.Item1</MudTd>
+                    <MudTd>@context.Item2</MudTd>
                 </RowTemplate>
             </MudTable>
         </div>
@@ -28,9 +28,16 @@
 
 @code {
     [Parameter, EditorRequired]
-    public IEnumerable<Import> ImportResults { get; set; }
+    public IDictionary<string,int> ImportResults { get; set; }
 
     [Parameter, EditorRequired]
-    public Action OnSubmit { get; set; }
+    public Func<Task> OnSubmit { get; set; }
 
+    private IEnumerable<(string, int)> _importResults;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _importResults = ImportResults.Select(kv => (kv.Key, kv.Value)).OrderByDescending(t => t.Value);
+    }
 }

@@ -3,19 +3,22 @@
 
 <EditForm Model="@InfoModel" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
+    <MudCard>
     <MudCardContent>
         <MudTextField Label="Email"
                       Class="mt-3" HelperText="The email of your GitHub account"
                       @bind-Value="InfoModel.Email"
                       For="@(() => InfoModel.Email)" />
-        <MudTextField Label="GitHub Url"
-                      HelperText="The master branch GitHub url of your python project"
+        <MudTextField Label="GitHub Clone Url"
+                          HelperText="e.g. https://github.com/pallets/flask.git"
+                      
                       @bind-Value="InfoModel.Url"
                       For="@(() => InfoModel.Url)" />
     </MudCardContent>
     <MudCardActions>
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Analyse</MudButton>
     </MudCardActions>
+    </MudCard>
 </EditForm>
 
 @code {
@@ -28,13 +31,17 @@
     {
         InfoModel = new()
         {
-                Email = "mircea.lungu@gmail.com",
-                Url = "https://github.com/zeeguu/api.git"
+                //Email = "mircea.lungu@gmail.com",
+                //Url = "https://github.com/zeeguu/api.git"
         };
     }
 
     private async Task OnValidSubmit()
     {
+        if (!InfoModel.Url.EndsWith(".git"))
+        {
+            InfoModel.Url += ".git";
+        }
         await OnSubmit(InfoModel);
     }
 }

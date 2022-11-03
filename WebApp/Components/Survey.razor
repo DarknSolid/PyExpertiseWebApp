@@ -4,7 +4,12 @@
 <MudText Typo="Typo.h3" GutterBottom="true">Expertise Self-Assessment</MudText>
 
 <MudCard>
+    <MudCardHeader>
+        <MudText>Rate from 1-5 your own assessment of the following @(Libraries.Count()) libraries that you have used.</MudText>
+    </MudCardHeader>
     <MudCardContent>
+        <MudText>1 = I barely understand this library and I need to google for answers</MudText>
+        <MudText Class="mb-5">5 = I have a very good understanding of this library and I barely need to google for answers</MudText>
         <div class="d-flex flex-column gap-10">
 
             @foreach (var library in Libraries)

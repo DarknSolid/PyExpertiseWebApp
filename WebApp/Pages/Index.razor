@@ -4,40 +4,44 @@
 @using Newtonsoft.Json;
 @using WebApp.Models;
 @inject HttpClient HttpClient
+@inject IJSRuntime JsRuntime
 
 <PageTitle>PyExpertise</PageTitle>
+<div class="d-flex align-center justify-center">
+<div style="max-width: 800px;">
 
-<MudText>Step = @step</MudText>
-@if(errorMessage != null)
-{
-    <MudAlert Severity="Severity.Warning">@errorMessage</MudAlert>
-}
+    @if(errorMessage != null)
+    {
+        <MudAlert Severity="Severity.Warning">@errorMessage</MudAlert>
+    }
 
-@if(step == 0)
-{
-    <Introduction OnNext="OnNext"/>
-}
-else if (step == 1)
-{
-    <UserInfoForm OnSubmit="OnUserInfoSubmit"/>
-}
-else if (step == 2)
-{
-    <SurveyAnalysisLoading/>
-}
-else if (step == 3)
-{
-    <Survey Libraries="_importResult.LibrariesToAssess" OnSubmit="OnSurveySubmit"/>
-}
-else if (step == 4)
-{
-    <SurveyResult OnSubmit="OnNext" ImportResults="_importResult.Imports"/>
-}
-else
-{
-    <MudText Typo="Typo.h3" GutterBottom="true">Thank you for participating!</MudText>
-    <MudText Typo="Typo.body1" GutterBottom="true">You may now close this window</MudText>
-}
+    @if(step == 0)
+    {
+        <Introduction OnNext="OnNext"/>
+    }
+    else if (step == 1)
+    {
+        <UserInfoForm OnSubmit="OnUserInfoSubmit"/>
+    }
+    else if (step == 2)
+    {
+        <SurveyAnalysisLoading/>
+    }
+    else if (step == 3)
+    {
+        <Survey Libraries="_importResult.LibrariesToAssess" OnSubmit="OnSurveySubmit"/>
+    }
+    else if (step == 4)
+    {
+        <SurveyResult OnSubmit="OnNext" ImportResults="_importResult.Imports"/>
+    }
+    else
+    {
+        <MudText Typo="Typo.h3" GutterBottom="true">Thank you for participating!</MudText>
+        <MudText Typo="Typo.body1" GutterBottom="true">You may now close this window</MudText>
+    }
+</div>
+</div>
 
         <MudOverlay Visible="isLoading" DarkBackground="true" Absolute="false">
             <MudProgressCircular Size="Size.Large" Color="Color.Secondary" Indeterminate="true" />
@@ -76,12 +80,14 @@ else
             step = 1;
         }
         StateHasChanged();
+        await ScrollToTop();
     }
 
-    void OnNext()
+    async Task OnNext()
     {
         step++;
         StateHasChanged();
+        await ScrollToTop();
     }
 
     async Task OnSurveySubmit(SurveyModel surveyModel)
@@ -91,7 +97,14 @@ else
         var url = "/self-assess";
         isLoading = true;
         StateHasChanged();
-        var response = await HttpClient.PostAsJsonAsync(url, surveyModel);
+        var submission = new FinalSubmitModel()
+            {
+                Answers = surveyModel.Answers,
+                Imports = _importResult.Imports,
+                Email = _infoModel.Email,
+                Url = _infoModel.Url
+            };
+        var response = await HttpClient.PostAsJsonAsync(url, submission);
         isLoading = false;
         if (response.IsSuccessStatusCode)
         {
@@ -102,5 +115,11 @@ else
             errorMessage = response.StatusCode + " - something went wrong. Please try again";
         }
         StateHasChanged();
+        await ScrollToTop();
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JsRuntime.InvokeVoidAsync("scrollToTop");
     }
 }

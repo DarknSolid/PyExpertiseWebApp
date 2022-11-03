@@ -7,7 +7,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://PyExpertiseApi.victorfalkensko.repl.co/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://PyExpertiseApi.victorfalkensko.repl.co/"), Timeout = TimeSpan.FromMinutes(20) });
+//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://127.0.0.1:5000/"), Timeout = TimeSpan.FromMinutes(10) });
 builder.Services.AddMudServices();
 
 await builder.Build().RunAsync();
