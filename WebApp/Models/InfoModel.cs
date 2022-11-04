@@ -10,6 +10,6 @@ namespace WebApp.Models
 
             [Required]
             [Url(ErrorMessage = "Invalid url")]
-            public string Url { get; set; }
+            public IList<string> Urls { get; set; }
     }
 }

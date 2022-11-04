@@ -1,51 +1,96 @@
-﻿@using WebApp.Models;
+﻿@using System.ComponentModel.DataAnnotations
+@using WebApp.Models;
 <MudText Typo="Typo.h3" GutterBottom="true">Enter your GitHub Information</MudText>
 
-<EditForm Model="@InfoModel" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-    <MudCard>
+<MudForm @bind-IsValid="@success">
+    <MudCard >
         <MudCardHeader>
             <MudText>Please provide your email to your GitHub account and the url to one of your python projects on GitHub. The url should be the git clone url, e.g. https://github.com/username/repository.git</MudText>
         </MudCardHeader>
-    <MudCardContent>
-        <MudText Typo="Typo.subtitle2">Note: we only support urls for github.com and github.itu.dk</MudText>
-        <MudTextField Label="Email"
-                      Class="mt-3" HelperText="The email of your GitHub account"
-                      @bind-Value="InfoModel.Email"
-                      For="@(() => InfoModel.Email)" />
-        <MudTextField Label="GitHub Clone Url"
-                          HelperText="Please enter a valid url to one of your largest python projects. e.g. https://github.com/username/repository.git"
-                      
-                      @bind-Value="InfoModel.Url"
-                      For="@(() => InfoModel.Url)" />
-    </MudCardContent>
-    <MudCardActions>
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Analyse</MudButton>
-    </MudCardActions>
+        <MudCardContent>
+            <MudText Typo="Typo.subtitle2">Note: we only support urls for github.com and github.itu.dk</MudText>
+            <MudTextField Label="Email"
+                          Class="mt-3" HelperText="The email of your GitHub account"
+                          @bind-Value="InfoModel.Email"
+                          For="@(() => InfoModel.Email)"
+                          Required="true"
+                          RequiredError="Url required"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "Invalid email"})" />
+            @foreach (var (url, i) in InfoModel.Urls.Select((value, i) => (value, i)))
+            {
+                <div class="d-flex flex-row justify-start align-center gap-5">
+
+                    <MudTextField Label="GitHub Clone Url"
+                              HelperText="Please enter a valid url to one of your largest python projects. e.g. https://github.com/username/repository.git"
+                              @bind-Value=@InfoModel.Urls[i]
+                              Required="true" 
+                              RequiredError="Url required"
+                              Validation="@(new UrlAttribute(){ErrorMessage = "Invalid url"})" />
+
+                    @if (InfoModel.Urls.Count() > 1)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => DeleteUrlField(i)">Delete</MudButton>
+                    }
+
+                </div>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="AddUrlField">Add Url</MudButton>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Disabled="@(!success)" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnValidSubmit">Analyse</MudButton>
+        </MudCardActions>
     </MudCard>
-</EditForm>
+</MudForm>
 
 @code {
     [Parameter]
     public Func<InfoModel, Task> OnSubmit { get; set; }
 
+    [Required]
+    [Url]
+    public string Test { get; set; }
+
     public InfoModel InfoModel { get; set; }
+
+    bool success;
 
     public UserInfoForm()
     {
         InfoModel = new()
-        {
+            {
                 //Email = "mircea.lungu@gmail.com",
                 //Url = "https://github.com/zeeguu/api.git"
-        };
+                Urls = new List<string>() { "" }
+            };
     }
 
     private async Task OnValidSubmit()
     {
-        if (!InfoModel.Url.EndsWith(".git"))
+        for(int i = 0; i < InfoModel.Urls.Count; i++)
         {
-            InfoModel.Url += ".git";
+            if (!InfoModel.Urls[i].EndsWith(".git"))
+            {
+                InfoModel.Urls[i] += ".git";
+            }
         }
         await OnSubmit(InfoModel);
     }
+
+    private void AddUrlField()
+    {
+        InfoModel.Urls.Add("");
+    }
+
+    private void DeleteUrlField(int index)
+    {
+        InfoModel.Urls.RemoveAt(index);
+    }
+
+    private void OnUrlChange(int index, ChangeEventArgs args)
+    {
+        string url = (string)args.Value;
+        InfoModel.Urls[index] = url;
+        StateHasChanged();
+    }
+
 }
