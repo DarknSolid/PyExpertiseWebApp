@@ -6,7 +6,7 @@
 @inject HttpClient HttpClient
 @inject IJSRuntime JsRuntime
 
-<PageTitle>PyExpertise</PageTitle>
+<PageTitle>Usage Expertise Survey</PageTitle>
 <div class="d-flex align-center justify-center">
     <div style="max-width: 800px;">
 
@@ -25,7 +25,7 @@
         }
         else if (step == 2)
         {
-            <SurveyAnalysisLoading />
+            <SurveyAnalysisLoading Progress="_progressModel"/>
         }
         else if (step == 3)
         {
@@ -51,13 +51,15 @@
     private InfoModel _infoModel;
     private ImportResult _importResult;
     private SurveyModel _surveyModel;
+    private AnalysisProgressModel _progressModel;
     private int step;
     private bool isLoading;
     private string? errorMessage;
 
     public Index()
     {
-        step = 1;
+        step = 0;
+        _progressModel = new();
     }
 
     async Task OnUserInfoSubmit(InfoModel infoModel)
@@ -68,7 +70,12 @@
         var url = "/analyse";
         StateHasChanged();
 
-        var response = await HandlePostRequest(url, infoModel);
+        var responseTask = HandlePostRequest(url, infoModel);
+        await WaitForAnalysisCompletion(responseTask);
+
+        var response = responseTask.Result;
+
+
         if (response is not null)
         {
             if (response.IsSuccessStatusCode)
@@ -107,6 +114,7 @@
         var url = "/self-assess";
         isLoading = true;
         StateHasChanged();
+
         var submission = new FinalSubmitModel()
             {
                 Answers = surveyModel.Answers,
@@ -114,7 +122,9 @@
                 Email = _infoModel.Email,
                 Urls = _infoModel.Urls
             };
+
         var response = await HandlePostRequest(url, submission);
+
         isLoading = false;
         if (response is not null)
         {
@@ -158,6 +168,21 @@
         catch (HttpRequestException e)
         {
             return null;
+        }
+    }
+
+    private async Task WaitForAnalysisCompletion(Task task)
+    {
+        while (!task.IsCompleted)
+        {
+            await Task.Delay(2000);
+
+            var progressModel = await HttpClient.GetFromJsonAsync<AnalysisProgressModel>("analysis/progress/" + _infoModel.Email);
+            if (progressModel is not null)
+            {
+                _progressModel = progressModel;
+                StateHasChanged();
+            }
         }
     }
 

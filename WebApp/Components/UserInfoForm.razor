@@ -1,7 +1,7 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using WebApp.Models;
 <MudText Typo="Typo.h3" GutterBottom="true">Enter your GitHub Information</MudText>
-
+<MudDivider Light="true" />
 <MudForm @bind-IsValid="@success">
     <MudCard >
         <MudCardHeader>
@@ -58,8 +58,8 @@
     {
         InfoModel = new()
             {
-                //Email = "mircea.lungu@gmail.com",
-                //Url = "https://github.com/zeeguu/api.git"
+                //Email = "davidism@gmail.com",
+                //Urls = new List<string>() { "https://github.com/pallets/flask.git" },
                 Urls = new List<string>() { "" }
             };
     }
@@ -85,12 +85,4 @@
     {
         InfoModel.Urls.RemoveAt(index);
     }
-
-    private void OnUrlChange(int index, ChangeEventArgs args)
-    {
-        string url = (string)args.Value;
-        InfoModel.Urls[index] = url;
-        StateHasChanged();
-    }
-
 }

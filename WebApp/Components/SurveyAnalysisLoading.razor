@@ -1,17 +1,81 @@
-﻿
+﻿@using WebApp.Models
+
 
 <MudText Typo="Typo.h3" GutterBottom="true">Analysis In Progess</MudText>
-
+<MudDivider Light="true" />
 <MudCard>
     <MudCardContent>
         <div class="d-flex flex-column align-center gap-10">
+            @if (Progress.Total == 0)
+            {
+                <MudText Style="text-align:center" Align="Align.Center">Cloning Repositories...</MudText>
 
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-            <MudText Align="Align.Center" Typo="Typo.h6" GutterBottom="true">Please allow up to 10 minutes for the analysis</MudText>
-            <MudText Typo="Typo.subtitle1">The analysis time depends on the size of your project and the amount of commits.</MudText>
+                <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Indeterminate="true" Class="my-2"/>
+            }
+            else
+            {
+                <MudText Style="text-align:center" Align="Align.Center">Analysing commit @Progress.Count of @Progress.Total</MudText>
+
+                <MudProgressLinear Color="Color.Secondary" Striped="true" Size="Size.Large" Value="@_progressPercentage" Class="my-2">
+                    <MudText>@(_progressPercentage)%</MudText>
+                </MudProgressLinear>
+                <MudText Style="text-align:center" Align="Align.Center">Eta: @_minutesLeft min. - Elapsed: @_minutesElapsed min.</MudText>
+
+                <MudText Style="text-align:center" Align="Align.Center" Typo="Typo.subtitle1">The analysis time depends on the amount of commits.</MudText>
+            }
         </div>
 
     </MudCardContent>
     <MudCardActions>
     </MudCardActions>
 </MudCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public AnalysisProgressModel Progress { get; set; }
+
+    private int _progressPercentage;
+    private int _previousTotal;
+    private int _minutesLeft;
+    private int _minutesElapsed;
+
+    private DateTime _start;
+
+    public SurveyAnalysisLoading()
+    {
+        _start = DateTime.Now;
+    }
+
+    private void UpdateProgressPercentage()
+    {
+        if (_previousTotal == 0 && Progress.Total > 0)
+        {
+            _start = DateTime.Now;
+        }
+        _previousTotal = Progress.Total;
+
+
+        if (Progress.Total == 0 || Progress.Count == 0)
+        {
+            _progressPercentage = 0;
+            return;
+        }
+        var division = ((float)Progress.Count) / Progress.Total;
+        var pct = division * 100 + 0d;
+
+        _progressPercentage = (int)Math.Ceiling(pct);
+
+        var elapsed = DateTime.Now - _start;
+        _minutesElapsed = (int)Math.Floor(elapsed.TotalMinutes);
+
+        var minutesElapsed = (int)Math.Ceiling(elapsed.TotalMinutes);
+        _minutesLeft = (100 / _progressPercentage) * minutesElapsed - _minutesElapsed;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        UpdateProgressPercentage();
+        StateHasChanged();
+    }
+}
