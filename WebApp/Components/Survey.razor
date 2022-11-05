@@ -5,24 +5,37 @@
 <MudDivider Light="true" />
 <MudCard>
     <MudCardHeader>
-        <MudText>Rate from 1-5 your own assessment of the following @(Libraries.Count()) libraries that you have used.</MudText>
+        <MudText>Rate from 0-5 your own assessment of the following @(Libraries.Count()) libraries that you have used.</MudText>
     </MudCardHeader>
     <MudCardContent>
-        <MudText>1 = I barely understand this library and I need to google for answers</MudText>
-        <MudText Class="mb-5">5 = I have a very good understanding of this library and I barely need to google for answers</MudText>
-        <div class="d-flex flex-column gap-10">
+
+        <MudText>0 = don't know what this library is/does</MudText>
+        <MudText>1 = I have some idea</MudText>
+        <MudText>2 = need to read documentation very often</MudText>
+        <MudText>3 = need to read documentation every now and then</MudText>
+        <MudText>4 = rarely need to read documentation</MudText>
+        <MudText Class="mb-5">5 = can use comfortably without needing to look at documentation</MudText>
+
+        <div class="d-flex flex-column">
 
             @foreach (var library in Libraries)
             {
                 <div>
-                    <MudText>@library</MudText>
+                    <MudText Typo="Typo.h6">@library</MudText>
                     <MudSlider TickMarks="true"
                            TickMarkLabels="@_labels"
-                           Value="_surveyModel.Answers[library]"
+                           Value="_surveyModel.ImportToRating[library]"
                            Step="1"
                            Max="5"
-                           Min="1"
+                           Min="0"
                            @onchange=@((ChangeEventArgs e) => OnSliderChange(library, e)) />
+
+                    <MudTextField @bind-Value="_surveyModel.ImportToNote[library]"
+                              Label="Optional Note"
+                              />
+
+                    <MudDivider Class="my-5" Light="true" />
+
                 </div>
             }
         </div>
@@ -42,7 +55,7 @@
 
     private SurveyModel _surveyModel;
 
-    private string[] _labels = new string[] { "1", "2", "3", "4", "5" };
+    private string[] _labels = new string[] { "0", "1", "2", "3", "4", "5" };
 
     public Survey()
     {
@@ -53,12 +66,17 @@
     {
         base.OnParametersSet();
 
-        // Initialize answers with ones
+        // Initialize dicts with default values:
         foreach (string library in Libraries)
         {
-            if (!_surveyModel.Answers.ContainsKey(library))
+            if (!_surveyModel.ImportToRating.ContainsKey(library))
             {
-                _surveyModel.Answers.Add(library, 1);
+                _surveyModel.ImportToRating.Add(library, 0);
+            }
+
+            if (!_surveyModel.ImportToNote.ContainsKey(library))
+            {
+                _surveyModel.ImportToNote.Add(library, "");
             }
         }
     }
@@ -66,7 +84,7 @@
     private void OnSliderChange(string key, ChangeEventArgs args)
     {
         int value = int.Parse((string)args.Value);
-        _surveyModel.Answers[key] = value;
+        _surveyModel.ImportToRating[key] = value;
     }
 
     private async Task OnSubmitPressed()

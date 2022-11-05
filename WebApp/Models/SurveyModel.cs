@@ -2,11 +2,14 @@
 {
     public class SurveyModel
     {
-        public IDictionary<string, int> Answers { get; set; }
+        public IDictionary<string, int> ImportToRating { get; set; }
 
-        public SurveyModel() 
+        public IDictionary<string, string> ImportToNote { get; set; }
+
+        public SurveyModel()
         {
-            Answers = new Dictionary<string, int>();
+            ImportToRating = new Dictionary<string, int>();
+            ImportToNote = new Dictionary<string, string>();
         }
     }
 }

@@ -58,8 +58,10 @@
 
     public Index()
     {
-        step = 0;
+        step = 3;
         _progressModel = new();
+        _importResult = new();
+        _importResult.LibrariesToAssess = new List<string>() { "test1", "test2", "test3" };
     }
 
     async Task OnUserInfoSubmit(InfoModel infoModel)
@@ -117,7 +119,8 @@
 
         var submission = new FinalSubmitModel()
             {
-                Answers = surveyModel.Answers,
+                ImportToRating = surveyModel.ImportToRating,
+                ImportToNote = surveyModel.ImportToNote,
                 Imports = _importResult.Imports,
                 Email = _infoModel.Email,
                 Urls = _infoModel.Urls
