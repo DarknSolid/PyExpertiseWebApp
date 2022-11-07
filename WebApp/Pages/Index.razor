@@ -25,13 +25,19 @@
         }
         else if (step == 2)
         {
-            <SurveyAnalysisLoading Progress="_progressModel"/>
+            <RepositorySelection UserInfo=_infoModel
+                             OnError="(string message) => {step--; errorMessage=message; StateHasChanged();}"
+                             OnNext="@((IEnumerable<string> urls, string username) => OnRepositorySelectSubmit(urls, username))" />
         }
         else if (step == 3)
         {
-            <Survey Libraries="_importResult.LibrariesToAssess" OnSubmit="OnSurveySubmit" />
+            <SurveyAnalysisLoading Progress="_progressModel" />
         }
         else if (step == 4)
+        {
+            <Survey Libraries="_importResult.LibrariesToAssess" OnSubmit="OnSurveySubmit" />
+        }
+        else if (step == 5)
         {
             <SurveyResult OnSubmit="OnNext" ImportResults="_importResult.Imports" />
         }
@@ -48,10 +54,11 @@
 </MudOverlay>
 
 @code {
-    private InfoModel _infoModel;
+    private UserInfoModel _infoModel;
     private ImportResult _importResult;
     private SurveyModel _surveyModel;
     private AnalysisProgressModel _progressModel;
+    private AnalysisSubmitModel _analysisSubmitModel;
     private int step;
     private bool isLoading;
     private string? errorMessage;
@@ -63,15 +70,31 @@
         _importResult = new();
     }
 
-    async Task OnUserInfoSubmit(InfoModel infoModel)
+    async Task OnUserInfoSubmit(UserInfoModel infoModel)
     {
         errorMessage = null;
-        step++;
         _infoModel = infoModel;
-        var url = "/analyse";
-        StateHasChanged();
 
-        var responseTask = HandlePostRequest(url, infoModel);
+        step++;
+        StateHasChanged();
+        await ScrollToTop();
+    }
+
+    private async Task OnRepositorySelectSubmit(IEnumerable<string> urls, string username)
+    {
+        var url = "/analyse";
+
+        _infoModel.Username = username;
+        _analysisSubmitModel = new AnalysisSubmitModel()
+            {
+                Urls = urls.ToList(),
+                Username = username
+            };
+
+        var responseTask = HttpClient.HandlePostRequest(url, _analysisSubmitModel);
+
+        step++;
+        StateHasChanged();
         await WaitForAnalysisCompletion(responseTask);
 
         var response = responseTask.Result;
@@ -88,13 +111,13 @@
             else
             {
                 errorMessage = response.StatusCode + " - something went wrong. Please try again";
-                step = 1;
+                step -= 1;
             }
         }
         else
         {
             errorMessage = "Failed getting a response from the server.";
-            step = 1;
+            step -= 1;
         }
 
         StateHasChanged();
@@ -108,7 +131,7 @@
         await ScrollToTop();
     }
 
-    async Task OnSurveySubmit(SurveyModel surveyModel)
+    private async Task OnSurveySubmit(SurveyModel surveyModel)
     {
         errorMessage = null;
         _surveyModel = surveyModel;
@@ -121,11 +144,12 @@
                 ImportToRating = surveyModel.ImportToRating,
                 ImportToNote = surveyModel.ImportToNote,
                 Imports = _importResult.Imports,
-                Email = _infoModel.Email,
-                Urls = _infoModel.Urls
+                Username = _infoModel.Username,
+                IsItu = _infoModel.IsItu,
+                Urls = _analysisSubmitModel.Urls
             };
 
-        var response = await HandlePostRequest(url, submission);
+        var response = await HttpClient.HandlePostRequest(url, submission);
 
         isLoading = false;
         if (response is not null)
@@ -154,32 +178,13 @@
         await JsRuntime.InvokeVoidAsync("scrollToTop");
     }
 
-    /// <summary>
-    /// Used to handle if the Api is offline or won't connect.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="url"></param>
-    /// <param name="postObject"></param>
-    /// <returns>Returns null if a HttpRequestException is thrown</returns>
-    private async Task<HttpResponseMessage?> HandlePostRequest<T>(string url, T postObject)
-    {
-        try
-        {
-            return await HttpClient.PostAsJsonAsync(url, postObject);
-        }
-        catch (HttpRequestException e)
-        {
-            return null;
-        }
-    }
-
     private async Task WaitForAnalysisCompletion(Task task)
     {
         while (!task.IsCompleted)
         {
             await Task.Delay(2000);
 
-            var progressModel = await HttpClient.GetFromJsonAsync<AnalysisProgressModel>("analysis/progress/" + _infoModel.Email);
+            var progressModel = await HttpClient.GetFromJsonAsync<AnalysisProgressModel>("analysis/progress/" + _infoModel.Username);
             if (progressModel is not null)
             {
                 _progressModel = progressModel;
