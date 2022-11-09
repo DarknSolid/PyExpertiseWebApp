@@ -90,7 +90,7 @@
 
     private async Task FetchRepositories()
     {
-        var errorMessage = $"Failed finding any repositories for {UserInfo.Username}";
+        var errorMessage = $"Failed finding any public Python repositories for user '{UserInfo.Username}'";
 
         var url = "/find-repositories";
         var response = await HttpClient.HandlePostRequest(url, UserInfo);
