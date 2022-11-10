@@ -28,9 +28,12 @@
                            Step="1"
                            Max="5"
                            Min="0"
+                           Class="mb-5"
                            @onchange=@((ChangeEventArgs e) => OnSliderChange(library, e)) />
 
                     <MudTextField @bind-Value="_surveyModel.ImportToNote[library]"
+                    Variant="Variant.Filled"
+                    Lines="3"
                               Label="Optional Note"
                               />
 
