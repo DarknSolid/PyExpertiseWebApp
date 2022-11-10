@@ -2,7 +2,8 @@
 @using WebApp.Models;
 <MudText Typo="Typo.h3" GutterBottom="true">Enter GitHub Username</MudText>
 <MudDivider Light="true" />
-<MudForm @bind-IsValid="@success">
+<EditForm OnValidSubmit="OnValidSubmit" Model="InfoModel">
+    <DataAnnotationsValidator />
     <MudCard >
         <MudCardHeader>
             <MudText>Please provide your GitHub username</MudText>
@@ -12,17 +13,15 @@
                           Class="mt-3" 
                           @bind-Value="InfoModel.Username"
                           For="@(() => InfoModel.Username)"
-                          Required="true"
-                          RequiredError="Url required"
-                          Validation="@(new MinLengthAttribute(2) {ErrorMessage = "min. 2 characters"})" />
+                           />
 
             <MudCheckBox @bind-Checked="@InfoModel.IsItu" Label="My GitHub account belongs to github.itu.dk" Color="Color.Secondary"></MudCheckBox>
         </MudCardContent>
         <MudCardActions>
-            <MudButton Disabled="@(!success)" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnValidSubmit">Analyse</MudButton>
+            <MudButton  ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Analyse</MudButton>
         </MudCardActions>
     </MudCard>
-</MudForm>
+</EditForm>
 
 @code {
     [Parameter]
