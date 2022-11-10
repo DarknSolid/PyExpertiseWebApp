@@ -16,7 +16,7 @@
                           RequiredError="Url required"
                           Validation="@(new MinLengthAttribute(2) {ErrorMessage = "min. 2 characters"})" />
 
-            <MudCheckBox @bind-Checked="@InfoModel.IsItu" Label="Is your account from github.itu.dk?" Color="Color.Secondary"></MudCheckBox>
+            <MudCheckBox @bind-Checked="@InfoModel.IsItu" Label="My GitHub account belongs to github.itu.dk" Color="Color.Secondary"></MudCheckBox>
         </MudCardContent>
         <MudCardActions>
             <MudButton Disabled="@(!success)" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnValidSubmit">Analyse</MudButton>
