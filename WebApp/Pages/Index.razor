@@ -27,7 +27,7 @@
         {
             <RepositorySelection UserInfo=_infoModel
                              OnError="(string message) => {step--; errorMessage=message; StateHasChanged();}"
-                             OnNext="@((IEnumerable<string> urls, string username) => OnRepositorySelectSubmit(urls, username))" />
+                             OnNext="@((IEnumerable<RepositoryResult> repositories, string username) => OnRepositorySelectSubmit(repositories, username))" />
         }
         else if (step == 3)
         {
@@ -83,14 +83,15 @@
         await ScrollToTop();
     }
 
-    private async Task OnRepositorySelectSubmit(IEnumerable<string> urls, string username)
+    private async Task OnRepositorySelectSubmit(IEnumerable<RepositoryResult> repositories, string username)
     {
         var url = "/analyse";
 
         _infoModel.Username = username;
         _analysisSubmitModel = new AnalysisSubmitModel()
             {
-                Urls = urls.ToList(),
+                Urls = repositories.Select(r => r.Url).ToList(),
+                TotalCommits = repositories.Sum(r => r.UserCommits),
                 Username = username
             };
 

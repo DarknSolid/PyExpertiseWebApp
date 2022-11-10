@@ -16,7 +16,7 @@
         }
         else
         {
-            <MudText Class="mb-5" Typo="Typo.h6">Select at least one repository to analyse</MudText>
+            <MudText Class="mb-5" Typo="Typo.h6">Please select at least one repository for analysis to which you have contributed python code</MudText>
 
             <MudTable Items="@_fetchedRepositories.Repositories"
                   MultiSelection="true"
@@ -55,7 +55,7 @@
     public Action<string> OnError { get; set; }
 
     [Parameter, EditorRequired]
-    public Action<IEnumerable<string>, string> OnNext { get; set; }
+    public Action<IEnumerable<RepositoryResult>, string> OnNext { get; set; }
 
     private bool _canSubmit;
 
@@ -85,7 +85,7 @@
 
     private void OnSubmit()
     {
-        OnNext(_selection.Select(r => r.Url), _fetchedRepositories.Username);
+        OnNext(_selection, _fetchedRepositories.Username);
     }
 
     private async Task FetchRepositories()
