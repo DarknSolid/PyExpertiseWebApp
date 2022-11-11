@@ -1,51 +1,55 @@
 ﻿@using WebApp.Models;
 
 
-<MudText Typo="Typo.h3" GutterBottom="true">Expertise Self-Assessment</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Library Expertise Self-Assessment</MudText>
 <MudDivider Light="true" />
 <MudCard>
     <MudCardHeader>
-        <MudText>Please rate from 0-5 your current level of expertise in the following @(Libraries.Count()) libraries, that you have used.</MudText>
+        <div class="d-flex flex-column align-center gap-2" style="width:100%;">
+            <MudText Typo="Typo.h6">Library @(_step + 1) of @_libraries.Count</MudText>
+            <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Value="@(_progress)" Class="my-2">
+            </MudProgressLinear>
+            <MudText>Please rate the @(Libraries.Count()) selected libraries, that you have used.</MudText>
+        </div>
     </MudCardHeader>
     <MudCardContent>
-
-        <MudText>0 = I don't know what this library is/does</MudText>
-        <MudText>1 = I have some idea</MudText>
-        <MudText>2 = I need to read documentation regularly</MudText>
-        <MudText>3 = I need to read documentation every now and then</MudText>
-        <MudText>4 = I rarely need to read documentation</MudText>
-        <MudText Class="mb-5">5 = I can use comfortably without needing to look at documentation</MudText>
+        <MudText></MudText>
 
         <div class="d-flex flex-column">
 
-            @foreach (var library in Libraries)
+            @if (_step < _libraries.Count)
             {
-                <div>
-                    <MudText Typo="Typo.h6">@library</MudText>
-                    <MudSlider TickMarks="true"
-                           TickMarkLabels="@_labels"
-                           Value="_surveyModel.ImportToRating[library]"
-                           Step="1"
-                           Max="5"
-                           Min="0"
-                           Class="mb-5"
-                           @onchange=@((ChangeEventArgs e) => OnSliderChange(library, e)) />
-
-                    <MudTextField @bind-Value="_surveyModel.ImportToNote[library]"
-                    Variant="Variant.Filled"
-                    Lines="3"
-                              Label="Optional Note"
-                              />
-
-                    <MudDivider Class="my-5" Light="true" />
-
+                <MudText Typo="Typo.h6">@_libraries[_step]</MudText>
+                <div class="d-flex">
+                    <MudRadioGroup T="int" @bind-SelectedOption="_selectedOption">
+                        <MudRadio Option="@(0)">I don't know what this library does</MudRadio>
+                        <MudText>I know what it does:</MudText>
+                        <MudRadio Option="@(1)">but <strong>can't use any</strong> of the library's functions without documentation</MudRadio>
+                        <MudRadio Option="@(2)">and <strong>can use some</strong> of the library's functions without documentation</MudRadio>
+                        <MudRadio Option="@(3)">and <strong>can use most</strong> of the library's functions without documentation</MudRadio>
+                        <MudRadio Option="@(4)">and <strong>can use all</strong> of the library's functions without documentation</MudRadio>
+                    </MudRadioGroup>
                 </div>
+
+                <MudTextField @bind-Value="_surveyModel.ImportToNote[_libraries[_step]]"
+                          Variant="Variant.Filled"
+                          Text="Optional Note"
+                          Lines="3"
+                          />
             }
+
         </div>
 
     </MudCardContent>
     <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmitPressed">Submit</MudButton>
+        @if (_step < _libraries.Count - 1)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnNextLibrary">Next</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmitPressed">Submit</MudButton>
+        }
     </MudCardActions>
 </MudCard>
 
@@ -55,10 +59,13 @@
 
     [Parameter, EditorRequired]
     public IEnumerable<string> Libraries { get; set; }
+    private IList<string> _libraries;
 
     private SurveyModel _surveyModel;
+    private int _selectedOption;
 
-    private string[] _labels = new string[] { "0", "1", "2", "3", "4", "5" };
+    private int _step;
+    private float _progress;
 
     public Survey()
     {
@@ -68,6 +75,10 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+
+        _libraries = Libraries.ToList();
+
+        UpdateProgress();
 
         // Initialize dicts with default values:
         foreach (string library in Libraries)
@@ -84,10 +95,20 @@
         }
     }
 
-    private void OnSliderChange(string key, ChangeEventArgs args)
+    private void OnNextLibrary()
     {
-        int value = int.Parse((string)args.Value);
-        _surveyModel.ImportToRating[key] = value;
+        _surveyModel.ImportToRating[_libraries[_step]] = _selectedOption;
+        _step++;
+        UpdateProgress();
+        _selectedOption = 0;
+    }
+
+    private void UpdateProgress()
+    {
+        var division = ((float)_step + 1) / _libraries.Count;
+        var pct = division * 100 + 0d;
+
+        _progress = (int)Math.Ceiling(pct);
     }
 
     private async Task OnSubmitPressed()
