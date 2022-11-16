@@ -9,7 +9,7 @@
             <MudText Typo="Typo.h6">Library @(_step + 1) of @_libraries.Count</MudText>
             <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Value="@(_progress)" Class="my-2">
             </MudProgressLinear>
-            <MudText>Please rate the @(Libraries.Count()) selected libraries, that you have used.</MudText>
+            <MudText>Please rate the next @(Libraries.Count()) libraries, that you have used.</MudText>
         </div>
     </MudCardHeader>
     <MudCardContent>
@@ -19,7 +19,7 @@
 
             @if (_step < _libraries.Count)
             {
-                <MudText Typo="Typo.h6">@_libraries[_step]</MudText>
+                <MudText Typo="Typo.h6">Library: @_libraries[_step]</MudText>
                 <div class="d-flex">
                     <MudRadioGroup T="int" @bind-SelectedOption="_selectedOption">
                         <MudRadio Option="@(0)">I don't know what this library does</MudRadio>
@@ -42,6 +42,11 @@
 
     </MudCardContent>
     <MudCardActions>
+        @if(_step > 0)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="mr-auto" OnClick="OnPreviousLibrary">Back</MudButton>
+            
+        }
         @if (_step < _libraries.Count - 1)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnNextLibrary">Next</MudButton>
@@ -59,6 +64,7 @@
 
     [Parameter, EditorRequired]
     public IEnumerable<string> Libraries { get; set; }
+
     private IList<string> _libraries;
 
     private SurveyModel _surveyModel;
@@ -101,6 +107,13 @@
         _step++;
         UpdateProgress();
         _selectedOption = 0;
+    }
+
+    private void OnPreviousLibrary()
+    {
+        _step--;
+        _selectedOption = _surveyModel.ImportToRating[_libraries[_step]];
+        UpdateProgress();
     }
 
     private void UpdateProgress()

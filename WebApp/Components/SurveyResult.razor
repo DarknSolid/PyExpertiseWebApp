@@ -8,15 +8,20 @@
 
         <div class="d-flex flex-column gap-10">
 
-            <MudTable Items="@_importResults" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+            <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
-                    <MudTh>Library</MudTh>
-                    <MudTh>Total Imports</MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.Name)">Library</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.TotalImports)">Total Imports</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.IsStandardLibrary)"><MudTooltip Placement="Placement.Top" Text="If the library belongs to the list of Python standard libraries">Standard Library</MudTooltip></MudTableSortLabel></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>@context.Item1</MudTd>
-                    <MudTd>@context.Item2</MudTd>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd>@context.TotalImports</MudTd>
+                    <MudTd>@(context.IsStandardLibrary ? "yes" : "no")</MudTd>
                 </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[]{10, 20, 50, 100}" />
+                </PagerContent>
             </MudTable>
         </div>
 
@@ -28,16 +33,14 @@
 
 @code {
     [Parameter, EditorRequired]
-    public IDictionary<string,int> ImportResults { get; set; }
+    public IEnumerable<Library> ImportResults { get; set; }
 
     [Parameter, EditorRequired]
     public Func<Task> OnSubmit { get; set; }
 
-    private IEnumerable<(string, int)> _importResults;
-
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        _importResults = ImportResults.Select(kv => (kv.Key, kv.Value)).OrderByDescending(t => t.Value);
     }
+
 }

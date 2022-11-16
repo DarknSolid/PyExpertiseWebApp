@@ -143,11 +143,17 @@
         isLoading = true;
         StateHasChanged();
 
+        var imports = new Dictionary<string, int>();
+        foreach (var lib in _importResult.Imports)
+        {
+            imports.Add(lib.Name, lib.TotalImports);
+        }
+
         var submission = new FinalSubmitModel()
             {
                 ImportToRating = surveyModel.ImportToRating,
                 ImportToNote = surveyModel.ImportToNote,
-                Imports = _importResult.Imports,
+                Imports = imports,
                 Username = _infoModel.Username,
                 IsItu = _infoModel.IsItu,
                 Urls = _analysisSubmitModel.Urls
