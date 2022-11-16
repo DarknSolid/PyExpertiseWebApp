@@ -83,16 +83,16 @@
         await ScrollToTop();
     }
 
-    private async Task OnRepositorySelectSubmit(IEnumerable<RepositoryResult> repositories, string username)
+    private async Task OnRepositorySelectSubmit(IEnumerable<RepositoryResult> repositories, string email)
     {
         var url = "/analyse";
 
-        _infoModel.Username = username;
         _analysisSubmitModel = new AnalysisSubmitModel()
             {
                 Urls = repositories.Select(r => r.Url).ToList(),
                 TotalCommits = repositories.Sum(r => r.UserCommits),
-                Username = username
+                Username = _infoModel.Username,
+                Email = email
             };
 
         var responseTask = HttpClient.HandlePostRequest(url, _analysisSubmitModel);
@@ -156,7 +156,8 @@
                 Imports = imports,
                 Username = _infoModel.Username,
                 IsItu = _infoModel.IsItu,
-                Urls = _analysisSubmitModel.Urls
+                Urls = _analysisSubmitModel.Urls,
+                TotalCommits = _analysisSubmitModel.TotalCommits
             };
 
         var response = await HttpClient.HandlePostRequest(url, submission);

@@ -2,7 +2,7 @@
 {
     public class RepositoriesResultModel
     {
-        public string Username { get; set; }
+        public string Email { get; set; }
         public IEnumerable<RepositoryResult> Repositories { get; set; }
     }
 
