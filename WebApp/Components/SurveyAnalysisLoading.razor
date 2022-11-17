@@ -80,8 +80,11 @@
         var elapsed = DateTime.Now - _start;
         _minutesElapsed = (int)Math.Floor(elapsed.Value.TotalMinutes);
 
-        var minutesElapsed = (int)Math.Ceiling(elapsed.Value.TotalMinutes);
-        _minutesLeft = (100 / _progressPercentage) * minutesElapsed - _minutesElapsed;
+        var secondsElapsed = elapsed.Value.TotalSeconds;
+        var percentagePerSecond = _progressPercentage / secondsElapsed;
+        var percentageLeft = 100 - _progressPercentage;
+        _minutesLeft = (int)Math.Ceiling(percentageLeft / percentagePerSecond + 0d);
+        _minutesLeft = (int)Math.Ceiling(_minutesLeft / 60d);
     }
 
     protected override void OnParametersSet()
