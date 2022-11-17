@@ -4,30 +4,33 @@
 <MudText Typo="Typo.h3" GutterBottom="true">Analysis In Progress</MudText>
 <MudDivider Light="true" />
 <MudCard>
-    <MudCardContent>
-        <div class="d-flex flex-column align-center gap-10">
-            @if (Progress.Total == 0)
-            {
-                <MudText Style="text-align:center" Align="Align.Center">Cloning Repositories...</MudText>
+    <MudCardContent Class="d-flex flex-column align-center">
+        <MudText Style="text-align:center" Align="Align.Center">Commit @Progress.Count of @Progress.Total</MudText>
+        <MudProgressLinear Style="height: 40px;" Color="Color.Secondary" Striped="true" Size="Size.Large" Value="@_progressPercentage" Class="my-2">
+            <MudText>@(_progressPercentage)% Eta: @_minutesLeft min. - Elapsed: @_minutesElapsed min.</MudText>
+        </MudProgressLinear>
+        <MudText Style="text-align:center" Align="Align.Center">Current repository: @Progress.CurrentRepositoryName</MudText>
 
-                <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Indeterminate="true" Class="my-3"/>
-                
-                <div style="width: 100%;" class="d-flex align-center justify-center">
-                    <MudImage Src="images/bear-with-us.png" Width="300" />
-                </div>
-            }
-            else
-            {
-                <MudText Style="text-align:center" Align="Align.Center">Analysing commit @Progress.Count of @Progress.Total</MudText>
+        <MudText Class="mb-5" Style="text-align:center" Align="Align.Center"></MudText>
 
-                <MudProgressLinear Color="Color.Secondary" Striped="true" Size="Size.Large" Value="@_progressPercentage" Class="my-2">
-                    <MudText>@(_progressPercentage)%</MudText>
-                </MudProgressLinear>
-                <MudText Style="text-align:center" Align="Align.Center">Eta: @_minutesLeft min. - Elapsed: @_minutesElapsed min.</MudText>
+        <MudText Style="align-self: flex-start" Typo="Typo.h6">Identified @Repositories.Count() Repositories:</MudText>
+        <MudTable Items="@Repositories"
+                  Hover="true"
+                  Breakpoint="Breakpoint.Sm"
+                  Striped="true"
+                  Bordered="true">
 
-                <MudText Style="text-align:center" Align="Align.Center" Typo="Typo.subtitle1">The analysis time depends on the amount of commits.</MudText>
-            }
-        </div>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Your Commits</MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="Name"><MudLink Target="_blanc" Href="@context.Url" Underline="Underline.Always">@context.RepositoryName</MudLink></MudTd>
+                <MudTd DataLabel="Your Commits">@context.UserCommits</MudTd>
+            </RowTemplate>
+
+        </MudTable>
 
     </MudCardContent>
     <MudCardActions>
@@ -38,41 +41,46 @@
     [Parameter, EditorRequired]
     public AnalysisProgressModel Progress { get; set; }
 
+    [Parameter, EditorRequired]
+    public IEnumerable<RepositoryResult> Repositories { get; set; }
+
     private int _progressPercentage;
-    private int _previousTotal;
     private int _minutesLeft;
     private int _minutesElapsed;
 
-    private DateTime _start;
+    private DateTime? _start;
 
     public SurveyAnalysisLoading()
     {
-        _start = DateTime.Now;
+        _start = null;
     }
 
     private void UpdateProgressPercentage()
     {
-        if (_previousTotal == 0 && Progress.Total > 0)
+        if (Progress.Count == Progress.Total)
+        {
+            return;
+        }
+        else if (_start == null)
         {
             _start = DateTime.Now;
         }
-        _previousTotal = Progress.Total;
-
 
         if (Progress.Total == 0 || Progress.Count == 0)
         {
             _progressPercentage = 0;
             return;
         }
+
         var division = ((float)Progress.Count) / Progress.Total;
         var pct = division * 100 + 0d;
 
         _progressPercentage = (int)Math.Ceiling(pct);
 
         var elapsed = DateTime.Now - _start;
-        _minutesElapsed = (int)Math.Floor(elapsed.TotalMinutes);
+        _minutesElapsed = (int)Math.Floor(elapsed.Value.TotalMinutes);
 
-        var minutesElapsed = (int)Math.Ceiling(elapsed.TotalMinutes);
+        var minutesElapsed = (int)Math.Ceiling(elapsed.Value.TotalMinutes);
         _minutesLeft = (100 / _progressPercentage) * minutesElapsed - _minutesElapsed;
     }
 

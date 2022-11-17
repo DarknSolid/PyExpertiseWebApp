@@ -25,13 +25,13 @@
         }
         else if (step == 2)
         {
-            <RepositorySelection UserInfo=_infoModel
-                             OnError="(string message) => {step--; errorMessage=message; StateHasChanged();}"
-                             OnNext="@((IEnumerable<RepositoryResult> repositories, string username) => OnRepositorySelectSubmit(repositories, username))" />
+            <RepositoryDiscovery UserInfo=_userInfoModel
+                             OnError="(string message) => {step=1; errorMessage=message; StateHasChanged();}"
+                             OnNext="@((IEnumerable<RepositoryResult> repositories) => OnRepositoryDiscoverFinished(repositories))" />
         }
         else if (step == 3)
         {
-            <SurveyAnalysisLoading Progress="_progressModel" />
+            <SurveyAnalysisLoading Repositories="_analysisSubmitModel.Repositories" Progress="_progressModel" />
         }
         else if (step == 4)
         {
@@ -57,7 +57,7 @@
 </MudOverlay>
 
 @code {
-    private UserInfoModel _infoModel;
+    private UserInfoModel _userInfoModel;
     private ImportResult _importResult;
     private SurveyModel _surveyModel;
     private AnalysisProgressModel _progressModel;
@@ -76,23 +76,22 @@
     async Task OnUserInfoSubmit(UserInfoModel infoModel)
     {
         errorMessage = null;
-        _infoModel = infoModel;
+        _userInfoModel = infoModel;
 
         step++;
         StateHasChanged();
         await ScrollToTop();
     }
 
-    private async Task OnRepositorySelectSubmit(IEnumerable<RepositoryResult> repositories, string email)
+    private async Task OnRepositoryDiscoverFinished(IEnumerable<RepositoryResult> repositories)
     {
         var url = "/analyse";
 
         _analysisSubmitModel = new AnalysisSubmitModel()
             {
-                Urls = repositories.Select(r => r.Url).ToList(),
-                TotalCommits = repositories.Sum(r => r.UserCommits),
-                Username = _infoModel.Username,
-                Email = email
+                Repositories = repositories,
+                Username = _userInfoModel.Username,
+                IsItu = _userInfoModel.IsItu
             };
 
         var responseTask = HttpClient.HandlePostRequest(url, _analysisSubmitModel);
@@ -115,13 +114,13 @@
             else
             {
                 errorMessage = response.StatusCode + " - something went wrong. Please try again";
-                step -= 1;
+                step = 1;
             }
         }
         else
         {
             errorMessage = "Failed getting a response from the server.";
-            step -= 1;
+            step = 1;
         }
 
         StateHasChanged();
@@ -154,10 +153,10 @@
                 ImportToRating = surveyModel.ImportToRating,
                 ImportToNote = surveyModel.ImportToNote,
                 Imports = imports,
-                Username = _infoModel.Username,
-                IsItu = _infoModel.IsItu,
-                Urls = _analysisSubmitModel.Urls,
-                TotalCommits = _analysisSubmitModel.TotalCommits
+                Username = _userInfoModel.Username,
+                IsItu = _userInfoModel.IsItu,
+                Urls = _analysisSubmitModel.Repositories.Select(r => r.Url).ToList(),
+                TotalCommits = _analysisSubmitModel.Repositories.Sum(r => r.UserCommits)
             };
 
         var response = await HttpClient.HandlePostRequest(url, submission);
@@ -195,7 +194,7 @@
         {
             await Task.Delay(2000);
 
-            var progressModel = await HttpClient.GetFromJsonAsync<AnalysisProgressModel>("analysis/progress/" + _infoModel.Username);
+            var progressModel = await HttpClient.GetFromJsonAsync<AnalysisProgressModel?>("analysis/progress/" + _userInfoModel.Username);
             if (progressModel is not null)
             {
                 _progressModel = progressModel;

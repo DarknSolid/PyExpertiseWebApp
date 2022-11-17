@@ -1,0 +1,68 @@
+﻿@using Newtonsoft.Json;
+@using WebApp.Models;
+@inject HttpClient HttpClient
+
+<MudText Typo="Typo.h3" GutterBottom="true">Discovering Repositories</MudText>
+<MudDivider Light="true" />
+<MudCard>
+    <MudCardContent>
+        <div class="d-flex flex-column align-center gap-10">
+            <MudText Style="text-align:center" Align="Align.Center">Discovering all public Python repositories with your contributions...</MudText>
+
+            <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" Class="my-2" />
+            
+            <div style="width: 100%;" class="d-flex align-center justify-center">
+                <MudImage Src="images/bear-with-us.png" Width="300" />
+            </div>
+        </div>
+    </MudCardContent>
+</MudCard>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public Action<string> OnError { get; set; }
+
+    [Parameter, EditorRequired]
+    public UserInfoModel UserInfo { get; set; }
+
+    [Parameter, EditorRequired]
+    public Action<IEnumerable<RepositoryResult>> OnNext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await FetchRepositories();
+    }
+
+    private async Task FetchRepositories()
+    {
+        var errorMessage = $"Failed finding any public Python repositories with contributions from the user '{UserInfo.Username}'";
+
+        var url = "/find-repositories";
+        var response = await HttpClient.HandlePostRequest(url, UserInfo);
+        RepositoriesResultModel fetchedRepositories = null;
+
+        if (response is not null && response.IsSuccessStatusCode)
+        {
+            var str = await response.Content.ReadAsStringAsync();
+            fetchedRepositories = JsonConvert.DeserializeObject<RepositoriesResultModel>(str);
+
+            if (fetchedRepositories is null || fetchedRepositories.Repositories.Count() == 0)
+            {
+                OnError(errorMessage);
+            }
+            else
+            {
+                fetchedRepositories.Repositories = fetchedRepositories.Repositories.OrderByDescending(r => r.UserCommits);
+
+                OnNext(fetchedRepositories.Repositories);
+            }
+
+        }
+        else
+        {
+            OnError(errorMessage);
+        }
+    }
+}
