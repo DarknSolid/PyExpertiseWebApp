@@ -1,7 +1,7 @@
 ﻿@using WebApp.Models
 
 
-<MudText Typo="Typo.h3" GutterBottom="true">Analysis In Progress</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Python Import Analysis In Progress</MudText>
 <MudDivider Light="true" />
 <MudCard>
     <MudCardContent Class="d-flex flex-column align-center">
@@ -13,7 +13,7 @@
 
         <MudText Class="mb-5" Style="text-align:center" Align="Align.Center"></MudText>
 
-        <MudText Style="align-self: flex-start" Typo="Typo.h6">Identified @Repositories.Count() Repositories:</MudText>
+        <MudText Style="align-self: flex-start" Typo="Typo.h6">Identified @Repositories.Count() Python Repositories:</MudText>
         <MudTable Items="@Repositories"
                   Hover="true"
                   Breakpoint="Breakpoint.Sm"
@@ -22,7 +22,7 @@
 
             <HeaderContent>
                 <MudTh>Name</MudTh>
-                <MudTh>Your Commits</MudTh>
+                <MudTh>Your Commits (@Repositories.Sum(r => r.UserCommits)</MudTh>
             </HeaderContent>
 
             <RowTemplate>
