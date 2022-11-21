@@ -1,15 +1,15 @@
 ﻿@using WebApp.Models;
 
 
-<MudText Typo="Typo.h3" GutterBottom="true">Library Expertise Self-Assessment</MudText>
+<MudText Typo="Typo.h6" GutterBottom="true">Library Expertise Self-Assessment</MudText>
+<MudText Typo="Typo.subtitle2">Please rate your own expertise of the next @(Libraries.Count()) libraries, that you have used.</MudText>
 <MudDivider Light="true" />
 <MudCard>
     <MudCardHeader>
         <div class="d-flex flex-column align-center gap-2" style="width:100%;">
-            <MudText Typo="Typo.h6">Library @(_step + 1) of @_libraries.Count</MudText>
-            <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Value="@(_progress)" Class="my-2">
-            </MudProgressLinear>
-            <MudText>Please rate your own expertise of the next @(Libraries.Count()) libraries, that you have used.</MudText>
+            <MudProgressLinear Color="Color.Secondary" Size="Size.Large" Value="@(_progress)" Class="my-2" />
+            <MudText Typo="Typo.h6">Library @(_step + 1) of @_libraries.Count:</MudText>
+            <MudText Typo="Typo.h5">@_libraries[_step]</MudText>
         </div>
     </MudCardHeader>
     <MudCardContent>
@@ -19,33 +19,33 @@
 
             @if (_step < _libraries.Count)
             {
-                <MudText Typo="Typo.h6">Library: @_libraries[_step]</MudText>
                 <div class="d-flex">
                     <MudRadioGroup T="int" @bind-SelectedOption="_selectedOption">
                         <MudRadio Option="@(0)">I don't know what this library does</MudRadio>
-                        <MudText>I know what it does:</MudText>
-                        <MudRadio Option="@(1)">but <strong>can't use any</strong> of the library's functions without documentation</MudRadio>
-                        <MudRadio Option="@(2)">and <strong>can use some</strong> of the library's functions without documentation</MudRadio>
-                        <MudRadio Option="@(3)">and <strong>can use most</strong> of the library's functions without documentation</MudRadio>
-                        <MudRadio Option="@(4)">and <strong>can use all</strong> of the library's functions without documentation</MudRadio>
+                        <MudText Style="margin-left: 37px">I know what it does:</MudText>
+                        <div class="ml-10">
+                            <MudRadio Option="@(1)">but <strong>can not use any</strong> of the library's functions without documentation</MudRadio>
+                            <MudRadio Option="@(2)">and <strong>can use some</strong> of the library's functions without documentation</MudRadio>
+                            <MudRadio Option="@(3)">and <strong>can use most</strong> of the library's functions without documentation</MudRadio>
+                            <MudRadio Option="@(4)">and <strong>can use all</strong> of the library's functions without documentation</MudRadio>
+                        </div>
                     </MudRadioGroup>
                 </div>
 
                 <MudTextField @bind-Value="_surveyModel.ImportToNote[_libraries[_step]]"
                           Variant="Variant.Filled"
                           Label="Optional Note"
-                          Lines="3"
-                          />
+                          Lines="3" />
             }
 
         </div>
 
     </MudCardContent>
     <MudCardActions>
-        @if(_step > 0)
+        @if (_step > 0)
         {
             <MudButton Variant="Variant.Outlined" Color="Color.Default" Class="mr-auto" OnClick="OnPreviousLibrary">Back</MudButton>
-            
+
         }
         @if (_step < _libraries.Count - 1)
         {
