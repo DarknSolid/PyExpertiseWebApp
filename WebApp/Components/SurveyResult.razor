@@ -1,14 +1,15 @@
 ﻿@using WebApp.Models;
+@inject HttpClient HttpClient
 
 <MudText Typo="Typo.h6" GutterBottom="true">Import Analysis Results</MudText>
 <MudDivider Light="true" />
 <MudCard>
     <MudCardContent>
-        <MudText GutterBottom="true"><strong>The below table shows the total amount of imports that you have committed:</strong></MudText>
 
-        <div class="d-flex flex-column gap-10">
+        <div class="d-flex flex-column">
+            <MudText GutterBottom="true"><strong>The below table shows the total amount of imports that you have committed:</strong></MudText>
 
-            <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm">
+            <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm" Class="mb-5">
                 <HeaderContent>
                     <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.Name)">Library</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Library, object>(x=>x.TotalImports)">Total Imports</MudTableSortLabel></MudTh>
@@ -18,26 +19,68 @@
                     <MudTd>@context.Name</MudTd>
                     <MudTd>@context.TotalImports</MudTd>
                     <MudTd>@(context.IsStandardLibrary ? "yes" : "no")</MudTd>
-                </RowTemplate>
-            </MudTable>
-        </div>
+                    </RowTemplate>
+                </MudTable>
 
-    </MudCardContent>
-    <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmit">Finish</MudButton>
-    </MudCardActions>
-</MudCard>
+                <MudText Typo="Typo.subtitle2">
+                    Do you have any ideas of what else you would like to see
+                    in a personalized import analysis tool?
+                </MudText>
+                <MudTextField @bind-Value="_additionalSubmit.AdditionalComment"
+                          Variant="Variant.Filled"
+                          Label="Optional Note"
+                          Lines="3"
+                          Class="mb-5" />
 
-@code {
+                <MudText Typo="Typo.subtitle2">
+                    Could we contact you for further clarifications and updates
+                    if we improve this analysis tools?  In that case please leave
+                    your email:
+                </MudText>
+                <MudTextField @bind-Value="_additionalSubmit.Email"
+                          Variant="Variant.Filled"
+                          Label="Optional Email" />
+
+            </div>
+
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmit">Finish</MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    @code {
     [Parameter, EditorRequired]
     public IEnumerable<Library> ImportResults { get; set; }
 
     [Parameter, EditorRequired]
-    public Func<Task> OnSubmit { get; set; }
+    public Func<Task> OnSubmitFunc { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Username { get; set; }
+
+    private AdditionalSubmit _additionalSubmit;
+
+    public SurveyResult()
+    {
+        _additionalSubmit = new();
+    }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        _additionalSubmit.Username = Username;
+    }
+
+    private async Task OnSubmit()
+    {
+        if (!string.IsNullOrEmpty(_additionalSubmit.AdditionalComment) || !string.IsNullOrEmpty(_additionalSubmit.Email))
+        {
+            var url = "additional-comment";
+            var response = await HttpClient.HandlePostRequest(url, _additionalSubmit);
+        }
+
+        await OnSubmitFunc();
     }
 
 }
