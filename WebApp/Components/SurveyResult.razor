@@ -11,7 +11,7 @@
             <MudTable Items="@ImportResults" Hover="true" Breakpoint="Breakpoint.Sm">
                 <HeaderContent>
                     <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.Name)">Library</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.TotalImports)">Total Imports</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Library, object>(x=>x.TotalImports)">Total Imports</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<Library, object>(x=>x.IsStandardLibrary)"><MudTooltip Placement="Placement.Top" Text="If the library belongs to the list of Python standard libraries">Standard Library</MudTooltip></MudTableSortLabel></MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -19,9 +19,6 @@
                     <MudTd>@context.TotalImports</MudTd>
                     <MudTd>@(context.IsStandardLibrary ? "yes" : "no")</MudTd>
                 </RowTemplate>
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new int[]{10, 20, 50, 100}" />
-                </PagerContent>
             </MudTable>
         </div>
 
